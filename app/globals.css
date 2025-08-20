@@ -1,0 +1,166 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Nova paleta: Verde vivo + Azul escuro + Branco */
+    --background: 0 0% 100%; /* Branco puro */
+    --foreground: 0 0% 0%; /* Preto para texto */
+    --card: 0 0% 98%; /* Branco suave para cards */
+    --card-foreground: 0 0% 0%; /* Preto para texto */
+    --popover: 0 0% 98%;
+    --popover-foreground: 0 0% 0%;
+
+    /* Paleta verde vivo, azul escuro e branco */
+    --primary: 120 100% 35%; /* Verde vivo */
+    --primary-foreground: 0 0% 0%; /* Preto para texto */
+
+    --secondary: 220 100% 20%; /* Azul escuro */
+    --secondary-foreground: 0 0% 0%; /* Preto para texto */
+
+    --muted: 0 0% 95%; /* Branco com toque cinza */
+    --muted-foreground: 0 0% 0%;
+
+    --accent: 220 100% 20%; /* Azul escuro para accent */
+    --accent-foreground: 0 0% 0%; /* Preto para texto */
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 85%; /* Bordas cinza claro */
+    --input: 0 0% 95%; /* Inputs branco suave */
+    --ring: 120 100% 35%; /* Verde vivo para focus ring */
+
+    --radius: 0.75rem;
+    --font-sans: "Inter", sans-serif;
+    --font-display: "Inter", sans-serif;
+  }
+
+  .dark {
+    /* Modo escuro com azul escuro profundo */
+    --background: 220 50% 8%; /* Azul escuro muito profundo */
+    /* Alterando cor do texto para branco no modo escuro */
+    --foreground: 0 0% 95%; /* Branco suave para texto */
+    --card: 220 45% 12%; /* Azul escuro para cards */
+    /* Alterando cor do texto dos cards para branco no modo escuro */
+    --card-foreground: 0 0% 95%;
+    --popover: 220 45% 12%;
+    /* Alterando cor do texto dos popovers para branco no modo escuro */
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 120 100% 40%; /* Verde vivo mais claro no escuro */
+    /* Alterando cor do texto primário para branco no modo escuro */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 100% 25%; /* Azul escuro mais claro no escuro */
+    /* Alterando cor do texto secundário para branco no modo escuro */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 220 40% 15%;
+    /* Alterando cor do texto muted para cinza claro no modo escuro */
+    --muted-foreground: 0 0% 70%;
+
+    --accent: 220 100% 25%; /* Azul escuro mais claro no escuro */
+    /* Alterando cor do texto accent para branco no modo escuro */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 35% 20%;
+    --input: 220 35% 20%;
+    --ring: 120 100% 40%;
+  }
+
+  html {
+    font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+      "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+      Arial, "Noto Sans";
+    letter-spacing: -0.02em;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Remove outline padrão e aplica apenas borda do tema */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Estilo customizado para inputs com verde vivo */
+  .input-green-focus {
+    @apply border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200;
+  }
+
+  /* Remove ring padrão do Tailwind */
+  .focus\:ring-0:focus {
+    --tw-ring-offset-shadow: 0 0 #0000;
+    --tw-ring-shadow: 0 0 #0000;
+    box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+  }
+}
+
+@layer components {
+  .gradient-text {
+    /* Gradiente usando verde vivo e azul escuro */
+    @apply bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent;
+  }
+
+  .glass-effect {
+    /* Efeito vidro com branco */
+    @apply bg-background/80 backdrop-blur-xl border border-secondary/10 shadow-lg;
+  }
+
+  .card-hover {
+    /* Hover com sombra verde vivo */
+    @apply transition-all duration-300 hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-2 hover:scale-[1.02];
+  }
+
+  .btn-primary {
+    /* Botão primário verde vivo */
+    @apply bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-green-glow transition-all duration-300 border-0 focus:ring-2 focus:ring-primary/20 focus:ring-offset-2;
+  }
+
+  .btn-secondary {
+    /* Botão secundário azul escuro */
+    @apply bg-secondary hover:bg-secondary/90 text-secondary-foreground border border-secondary hover:border-secondary/80 shadow-sm hover:shadow-md transition-all duration-300 focus:ring-2 focus:ring-secondary/20 focus:ring-offset-2;
+  }
+
+  .livelo-card {
+    /* Cards com bordas azul escuro suave */
+    @apply bg-card rounded-2xl shadow-sm hover:shadow-lg border border-secondary/10 hover:border-primary/20 transition-all duration-300;
+  }
+
+  .livelo-input {
+    /* Inputs com foco verde vivo */
+    @apply bg-card border border-secondary/20 focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl px-4 py-3 transition-all duration-200 focus:outline-none;
+  }
+
+  /* Estilo específico para inputs do sistema */
+  .custom-input {
+    @apply border-secondary/20 bg-card rounded-lg px-3 py-2 text-foreground placeholder:text-muted-foreground transition-all duration-200;
+    @apply focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none;
+  }
+
+  /* Select customizado */
+  .custom-select {
+    @apply border-secondary/20 bg-card rounded-lg px-3 py-2 text-foreground transition-all duration-200;
+    @apply focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none;
+  }
+}

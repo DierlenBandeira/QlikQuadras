@@ -1,0 +1,168 @@
+import type * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+
+import { cn } from "@/lib/utils"
+
+const badgeVariants = cva(
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  {
+    variants: {
+      variant: {
+        default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+        secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+        outline: "text-foreground",
+        accent: "border-transparent bg-accent text-accent-foreground hover:bg-accent/80",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  },
+)
+
+export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
+
+function Badge({ className, variant, ...props }: BadgeProps) {
+  return <div className={cn(badgeVariants({ variant }), className)} {...props} />
+}
+
+export { Badge, badgeVariants }
+
+// app/checkout/page.tsx
+// Replace:
+// <Badge variant="secondary" className="text-xs">
+//   Parcelamento
+// </Badge>
+// With:
+<Badge variant="accent" className="text-xs">
+  Parcelamento
+</Badge>
+
+// Replace:
+// <Badge variant="secondary" className="text-xs">
+//   À vista
+// </Badge>
+// With:
+<Badge variant="accent" className="text-xs">
+  À vista
+</Badge>
+
+// app/confirmacao/page.tsx
+// Replace:
+// <Badge variant="secondary">#{bookingId}</Badge>
+// With:
+<Badge variant="accent">#{bookingId}</Badge>
+
+// app/quadra/[id]/page.tsx
+// Replace:
+// <Badge variant="secondary" className="text-sm px-3 py-1">
+//   {court.sport}
+// </Badge>
+// With:
+<Badge variant="accent" className="text-sm px-3 py-1">
+  {court.sport}
+</Badge>
+
+// Replace:
+// <Badge variant="secondary">Disponível</Badge>
+// With:
+<Badge variant="accent">Disponível</Badge>
+
+// app/page.tsx (home list)
+// Replace:
+// <Badge
+//   key={index}
+//   variant="secondary"
+//   className="text-xs px-3 py-1 bg-secondary-100 text-secondary-700 rounded-full"
+// >
+//   {amenity}
+// </Badge>
+// With:
+<Badge
+  key={index}
+  variant="accent"
+  className="text-xs px-3 py-1 rounded-full"
+>
+  {amenity}
+</Badge>
+
+// Replace the "+N" badge:
+// <Badge
+//   variant="secondary"
+//   className="text-xs px-3 py-1 bg-secondary-100 text-secondary-700 rounded-full"
+// >
+//   +{court.amenities.length - 3}
+// </Badge>
+// With:
+<Badge
+  variant="accent"
+  className="text-xs px-3 py-1 rounded-full"
+>
+  +{court.amenities.length - 3}
+</Badge>
+
+// app/dashboard/page.tsx
+// 1) Notifications panel sport chip:
+// Replace:
+// <Badge variant="secondary" className="bg-secondary-100 text-secondary-800">
+//   {reservation.sport}
+// </Badge>
+// With:
+<Badge variant="accent">
+  {reservation.sport}
+</Badge>
+
+// 2) Calendar "Reservations for selected date" status badge mapping:
+// Replace the Badge variant for pending from "secondary" to "accent":
+// variant={
+//   reservation.status === "confirmed"
+//     ? "default"
+//     : reservation.status === "pending"
+//       ? "secondary"
+//       : "destructive"
+// }
+// With:
+variant={
+  reservation.status === "confirmed"
+    ? "default"
+    : reservation.status === "pending"
+      ? "accent"
+      : "destructive"
+}
+
+// 3) Reservations list mapping: same change as above.
+// Replace the Badge variant for pending from "secondary" to "accent":
+// variant={
+//   reservation.status === "confirmed"
+//     ? "default"
+//     : reservation.status === "pending"
+//       ? "secondary"
+//       : "destructive"
+// }
+// With:
+variant={
+  reservation.status === "confirmed"
+    ? "default"
+    : reservation.status === "pending"
+      ? "accent"
+      : "destructive"
+}
+
+// 4) Reservation details modal mapping: same change.
+// Replace:
+// variant={
+//   selectedReservation.status === "confirmed"
+//     ? "default"
+//     : selectedReservation.status === "pending"
+//       ? "secondary"
+//       : "destructive"
+// }
+// With:
+variant={
+  selectedReservation.status === "confirmed"
+    ? "default"
+    : selectedReservation.status === "pending"
+      ? "accent"
+      : "destructive"
+}
