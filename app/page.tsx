@@ -1,14 +1,21 @@
 "use client"
 
+import LogoutMenuItem from "@/components/LogoutMenuItem";
+import LoginIfLoggedOut from "@/components/LoginIfLoggedOut";
+import UserGreeting from "@/components/UserGreeting";
+import { startOfToday } from "date-fns";
 import { useState, useEffect } from "react"
+import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Calendar } from "@/components/ui/calendar"
+import {
+  Dialog, DialogTrigger, DialogContent,
+  DialogHeader, DialogTitle, DialogFooter, DialogClose
+} from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import Image from "next/image"
@@ -45,14 +52,24 @@ import {
   Building2,
 } from "lucide-react"
 
+const today = new Date(); today.setHours(0,0,0,0);
+
 const sportCategories = [
   { id: "futebol", name: "Futebol", icon: "⚽" },
   { id: "volei", name: "Vôlei", icon: "🏐" },
   { id: "basquete", name: "Basquete", icon: "🏀" },
   { id: "tenis", name: "Tênis", icon: "🎾" },
   { id: "futsal", name: "Futsal", icon: "⚽" },
-  { id: "beach", name: "Beach", icon: "🏖️" },
+  { id: "beach", name: "Beach Tennis", icon: "🏖️" },
 ]
+
+const formatBtnLabel = (d?: Date) => {
+  if (!d) return "Selecionar Data";
+  const day = d.toLocaleDateString("pt-BR", { day: "numeric" });
+  const month = d.toLocaleDateString("pt-BR", { month: "long" });
+  const capMonth = month.charAt(0).toUpperCase() + month.slice(1);
+  return `${day} de ${capMonth}`;
+};
 
 const heroImages = [
   {
@@ -76,6 +93,8 @@ const heroImages = [
     alt: "Quadra de basquete indoor com arquibancadas",
   },
 ]
+
+
 
 const courts = [
   {
@@ -173,20 +192,36 @@ const courts = [
 ]
 
 export default function HomePage() {
+
+  
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const [date, setDate] = useState<Date | undefined>(undefined);        // data oficial (mostrada no botão)
+  const [draftDate, setDraftDate] = useState<Date | undefined>(undefined); // data “rascunho” dentro do modal
+  const [openDate, setOpenDate] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedTime, setSelectedTime] = useState<string | undefined>();
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [selectedCategory, setSelectedCategory] = useState("todos")
   const [searchQuery, setSearchQuery] = useState("")
   const [priceRange, setPriceRange] = useState([0, 300])
   const [favorites, setFavorites] = useState<number[]>([])
   const [selectedTab, setSelectedTab] = useState<"todos" | "mais-avaliadas">("todos")
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
-  const [selectedTime, setSelectedTime] = useState<string | undefined>(undefined)
   const [showFilters, setShowFilters] = useState(false)
+  today.setHours(0, 0, 0, 0);
+
+  const formatBtnLabel = (d?: Date) => {
+  if (!d) return "Selecionar Data";
+  const day = d.toLocaleDateString("pt-BR", { day: "numeric" });
+  const month = d.toLocaleDateString("pt-BR", { month: "long" });
+  const cap = month.charAt(0).toUpperCase() + month.slice(1);
+  return `${day} de ${cap}`;
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % heroImages.length)
-    }, 4000) // Troca de imagem a cada 4 segundos
+    }, 4000) // Troca de imagem a cada 2 segundos
 
     return () => clearInterval(interval)
   }, [])
@@ -207,6 +242,13 @@ export default function HomePage() {
     setCurrentImageIndex(index)
   }
 
+  const rdpVars: React.CSSProperties = {
+    ["--rdp-accent-color" as any]: "hsl(var(--primary))",
+    ["--rdp-accent-color-dark" as any]: "hsl(var(--primary))",
+    ["--rdp-background-color" as any]: "hsl(var(--primary) / 0.12)",
+    ["--rdp-outline" as any]: "2px solid hsl(var(--primary) / 0.35)",
+  };
+
   const filteredCourts = courts.filter((court) => {
     const matchesCategory = selectedCategory === "todos" || court.sport.toLowerCase().includes(selectedCategory)
     const matchesSearch =
@@ -222,7 +264,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-accent/30 to-white">
       {/* Fixed Header - Only top part */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-gray-100 shadow-sm">
+      <header className="sticky top-0 z-50 bg-white/100 backdrop-blur-xl border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between p-4 max-w-7xl mx-auto">
           <div className="flex items-center gap-3">
             <Sheet>
@@ -239,7 +281,7 @@ export default function HomePage() {
                 <div className="flex flex-col gap-6 pt-6">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-sport-gradient rounded-2xl flex items-center justify-center shadow-blue-glow">
-                      <span className="text-white font-bold text-lg">CQ</span>
+                      <span className="text-white font-bold text-lg">QQ</span>
                     </div>
                     <div>
                       <Image
@@ -289,7 +331,13 @@ export default function HomePage() {
 
             <Link href="/" className="flex items-center gap-3">
               <div className="w-10 h-10 bg-sport-gradient rounded-2xl flex items-center justify-center shadow-blue-glow">
-                <span className="text-white font-bold">CQ</span>
+                <Image
+                  src="/clik-quadras-icon-transparent.png"   // ou .png
+                  alt="Qlick Quadras"
+                  width={60}  // Define só a largura base
+                  height={60} // Mantém referência, mas vamos controlar via Tailwind
+                  className="w-14 h-auto inline-block"
+                />
               </div>
               <Image
                 src="/clik-quadras-logo-transparent.png"
@@ -300,6 +348,11 @@ export default function HomePage() {
                 priority
               />
             </Link>
+          </div>
+
+          <div className="ml-auto flex items-center gap-4">
+            <UserGreeting />
+            <LoginIfLoggedOut />
           </div>
 
           <div className="flex items-center gap-3">
@@ -316,12 +369,6 @@ export default function HomePage() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">
-                  <User className="mr-2 h-4 w-4" />
-                  <Link href="/perfil" className="flex items-center w-full">
-                    <span>Perfil</span>
-                  </Link>
-                </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer">
                   <Building2 className="mr-2 h-4 w-4" />
                   <Link href="/proprietario" className="flex items-center w-full">
@@ -342,8 +389,7 @@ export default function HomePage() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer text-red-600">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sair</span>
+                  <LogoutMenuItem />
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -387,24 +433,25 @@ export default function HomePage() {
               <h1 className="text-3xl md:text-5xl font-bold text-white mb-3 font-display">
                 Encontre a quadra
                 <br />
-                <span className="text-secondary-300">perfeita para você</span>
+                <span className="text-3xl md:text-5xl font-bold text-white mb-3 font-display">perfeita para você</span>
               </h1>
-              <p className="text-secondary-100 text-lg md:text-xl max-w-2xl mx-auto">
-                Mais de 1000 quadras disponíveis em São Paulo com reserva instantânea
+
+              <p className=" text-lg md:text-xl max-w-2xl mx-auto text-white">
+                Quadras disponíveis por toda nossa cidade de Caxias do Sul
               </p>
             </div>
 
             {/* Search Bar */}
             <div className="relative max-w-3xl mx-auto animate-fade-in">
-              <div className="glass-effect rounded-2xl p-2">
-                <div className="flex items-center gap-2">
+              <div className="rounded-2xl p-2">
+                <div className="flex items-centerl gap-2">
                   <div className="flex-1 relative">
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-secondary-200" />
+                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-primary-250" />
                     <Input
                       placeholder="Buscar por local ou nome da quadra..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-12 pr-4 h-12 bg-transparent border-0 text-white placeholder:text-secondary-200 focus:ring-0 text-lg"
+                      className="pl-12 pr-4 h-12 bg-white border-0 text-primary-250 placeholder:text-primary-250 focus:ring-0 text-lg"
                     />
                   </div>
                   <Button size="icon" className="h-12 w-12 btn-primary rounded-xl" onClick={() => setShowFilters(true)}>
@@ -418,21 +465,22 @@ export default function HomePage() {
       </div>
 
       {/* Categories */}
-      <div className="px-4 py-6 bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            <Button
-              variant={selectedCategory === "todos" ? "default" : "outline"}
-              size="lg"
-              onClick={() => setSelectedCategory("todos")}
-              className={`whitespace-nowrap rounded-full px-6 ${
-                selectedCategory === "todos"
-                  ? "btn-primary"
-                  : "btn-secondary hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200"
-              }`}
-            >
-              Todos
-            </Button>
+        <div className="px-4 py-6 bg-white border-b border-gray-100">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex gap-3 overflow-x-visible overflow-y-visible pb-2 py-1">
+              <Button
+                size="lg"
+                onClick={() => setSelectedCategory("todos")}
+                className={`rounded-full h-12 px-6 border shadow-none
+                            ring-0 ring-offset-0 focus:shadow-none focus:ring-0
+                            [&::before]:hidden [&::after]:hidden
+                            ${selectedCategory === "todos"
+                              ? "bg-primary-600 text-white border-primary-600 hover:bg-primary-600"
+                              : "bg-white text-gray-900 border-gray-200 hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200"
+                            }`}
+              >
+                Todos
+              </Button>
             {sportCategories.map((category) => (
               <Button
                 key={category.id}
@@ -455,80 +503,146 @@ export default function HomePage() {
 
       {/* Quick Booking */}
       <div className="px-4 py-6 bg-gradient-to-r from-accent/50 to-primary-50/30">
+
+
+
         <div className="max-w-7xl mx-auto">
           <div className="flex gap-3 overflow-x-auto">
-            <Dialog>
+            <Dialog
+              open={openDate}
+              onOpenChange={(o) => {
+                setOpenDate(o);
+                if (o) setDraftDate(date); // ao abrir, carrega a oficial para edição
+              }}
+            >
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
-                  className="whitespace-nowrap btn-secondary rounded-xl px-6 h-12 bg-transparent"
+                  className="w-48 h-12 rounded-full px-6 font-normal
+                            flex items-center justify-between
+                            hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200"
                 >
-                  <CalendarIcon className="h-5 w-5 mr-2 text-primary-500" />
-                  Selecionar Data
+                  <span className="flex items-center">
+                    <CalendarIcon className="h-5 w-5 mr-2 text-primary-500" />
+                    {formatBtnLabel(date)}
+                  </span>
+                  <svg className="h-4 w-4 opacity-60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-white rounded-2xl border-0 shadow-xl max-w-sm p-0">
+
+              <DialogContent className="bg-white rounded-2xl border-0 shadow-xl max-w-sm p-0 z-[80]">
                 <div className="p-6 border-b border-gray-100">
                   <DialogTitle className="text-secondary-800 text-xl text-center font-semibold">
                     Selecionar Data
                   </DialogTitle>
                 </div>
-                <div className="p-2">
+
+                <div className="cal-green p-4 block mx-auto p-2">
                   <Calendar
                     mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    disabled={(date) => date < new Date()}
-                    className="w-full"
+                    selected={draftDate}
+                    onSelect={setDraftDate}
+                    disabled={{ before: today }}
+                    initialFocus
+
+                    /* ⬇️ isto ganha de QUALQUER CSS externo */
+                    style={rdpVars}
+                    styles={{
+                      day_selected: {
+                        backgroundColor: "hsl(var(--primary))",
+                        color: "hsl(var(--primary-foreground))",
+                      },
+                      day_today: {
+                        outline: "2px solid hsl(var(--primary))",
+                        outlineOffset: "2px",
+                        boxShadow: "0 0 0 2px hsl(var(--primary))", // fallback
+                        borderRadius: "0.375rem",
+                      },
+                      day_outside: { color: "rgb(209 213 219)", opacity: 0.6 },
+                      day_disabled: { color: "rgb(156 163 175)", opacity: 0.6, cursor: "not-allowed" },
+                    }}
                   />
                 </div>
                 <div className="flex gap-3 p-6 pt-4 border-t border-gray-100">
                   <Button
                     variant="outline"
-                    className="flex-1 btn-secondary rounded-xl bg-transparent"
-                    onClick={() => setSelectedDate(undefined)}
+                    className="flex-1 rounded-2xl"
+                    onClick={() => { setDraftDate(undefined); setDate(undefined); }}
                   >
                     Limpar
                   </Button>
-                  <Button
-                    className="flex-1 btn-primary rounded-xl"
-                    onClick={() => {
-                      /* Close dialog logic */
-                    }}
-                    disabled={!selectedDate}
-                  >
-                    Confirmar
-                  </Button>
+
+                  {/* Confirmar aplica e fecha */}
+                  <DialogClose asChild>
+                    <Button
+                      className="flex-1 btn-primary rounded-xl"
+                      disabled={!draftDate}
+                      onClick={() => { if (draftDate) setDate(draftDate); }}
+                    >
+                      Confirmar
+                    </Button>
+                  </DialogClose>
                 </div>
               </DialogContent>
             </Dialog>
 
+
             <Select value={selectedTime} onValueChange={setSelectedTime}>
-              <SelectTrigger className="w-40 btn-secondary rounded-xl h-12">
+              <SelectTrigger   className="w-40 h-12 rounded-full px-6
+                                          hover:bg-primary-50 
+                                          hover:text-primary-600 
+                                          hover:border-primary-200 
+                                          data-[state=open]:ring-0 
+                                          data-[state=open]:ring-offset-0
+                                        focus:border-primary-400 data-[state=open]:border-primary-400">
+                                          
                 <Clock className="h-5 w-5 mr-2 text-primary-500" />
                 <SelectValue placeholder="Horário" />
               </SelectTrigger>
-              <SelectContent className="bg-white rounded-xl border-0 shadow-xl">
-                <SelectItem value="08:00">08:00</SelectItem>
-                <SelectItem value="10:00">10:00</SelectItem>
-                <SelectItem value="14:00">14:00</SelectItem>
-                <SelectItem value="16:00">16:00</SelectItem>
-                <SelectItem value="18:00">18:00</SelectItem>
-                <SelectItem value="20:00">20:00</SelectItem>
+              <SelectContent position="popper" sideOffset={8} className="rounded-xl border bg-white shadow-xl z-[70] p-1">
+                {["08:00","10:00","14:00","16:00","18:00","20:00"].map(v => (
+                  <SelectItem
+                    key={v}
+                    value={v}
+                    className="my-1 rounded-md
+                              data-[highlighted]:bg-primary-50 data-[highlighted]:text-primary-700"
+                  >
+                    {v}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
             <Select>
-              <SelectTrigger className="w-40 btn-secondary rounded-xl h-12">
+              <SelectTrigger
+                className="w-40 h-12 rounded-full px-6
+                          hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200
+                          data-[state=open]:ring-0 data-[state=open]:ring-offset-0
+                          focus:border-primary-400 data-[state=open]:border-primary-400"
+              >
                 <Users className="h-5 w-5 mr-2 text-primary-500" />
                 <SelectValue placeholder="Pessoas" />
               </SelectTrigger>
-              <SelectContent className="bg-white rounded-xl border-0 shadow-xl">
-                <SelectItem value="2-4">2-4 pessoas</SelectItem>
-                <SelectItem value="5-10">5-10 pessoas</SelectItem>
-                <SelectItem value="11-22">11-22 pessoas</SelectItem>
-              </SelectContent>
+
+              {/* padding interno do popup */}
+                <SelectContent
+                  position="popper"
+                  sideOffset={8}
+                  className="
+                    bg-white rounded-xl border-0 shadow-xl z-[70] p-1
+                    [&_[data-radix-select-item]]:my-1
+                    [&_[data-radix-select-item]]:rounded-md
+                  "
+                >
+                  <SelectItem value="2-4">2-4 pessoas</SelectItem>
+                  <SelectItem value="5-10">5-10 pessoas</SelectItem>
+                  <SelectItem value="11-22">11-22 pessoas</SelectItem>
+                </SelectContent>
+
             </Select>
+
           </div>
         </div>
       </div>
@@ -545,7 +659,7 @@ export default function HomePage() {
                   onClick={() => setSelectedTab("todos")}
                   className={`rounded-xl px-6 py-3 font-medium transition-all ${
                     selectedTab === "todos"
-                      ? "bg-primary-500 text-white shadow-lg"
+                      ? "bg-primary-500 text-black shadow-lg"
                       : "text-secondary-600 hover:text-secondary-800 hover:bg-white/50"
                   }`}
                 >

@@ -1,0 +1,41 @@
+import type {Reservation} from "@/types/owner";
+
+export const mockReservations: Reservation[] = [
+  {
+    id: "R001",
+    quadra: "Natu Sport",
+    cliente: "João Silva",
+    email: "joao.silva@email.com",
+    telefone: "(11) 99999-1234",
+    data: "2025-08-31",
+    horario: "14:00 - 15:00",
+    valor: 150,
+    status: "confirmada",
+    metodoPagamento: "PIX",
+    comprovantePagamento: "PIX_001_15012024.pdf",
+  },
+  {
+    id: "R002",
+    quadra: "Arena Centro",
+    cliente: "Maria Souza",
+    email: "maria.souza@email.com",
+    telefone: "(11) 98888-2222",
+    data: "2025-09-01",
+    horario: "10:00 - 11:00",
+    valor: 120,
+    status: "pendente",
+    metodoPagamento: "Cartão",
+  },
+  {
+    id: "R003",
+    quadra: "Quadra Sul",
+    cliente: "Pedro Lima",
+    email: "pedro.lima@email.com",
+    telefone: "(11) 97777-3333",
+    data: "2025-09-02",
+    horario: "18:00 - 19:00",
+    valor: 180,
+    status: "cancelada",
+    metodoPagamento: "PIX",
+  },
+];

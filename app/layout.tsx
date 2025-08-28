@@ -1,9 +1,10 @@
+import "react-day-picker/dist/style.css";
 import type React from "react"
 import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { inter, sora } from "./fonts"
-import "./globals.css"
+import "./globals.css";                    // <- depois (suas overrides ganham)
 
 export const metadata: Metadata = {
   title: "Clik Quadras - Reserve sua quadra com um clique",

@@ -163,4 +163,59 @@
     @apply border-secondary/20 bg-card rounded-lg px-3 py-2 text-foreground transition-all duration-200;
     @apply focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none;
   }
+
 }
+
+  /* ===== Calendar escopado ===== */
+  .cal-green .rdp {
+    --rdp-accent-color: hsl(var(--primary)) !important;            /* cor principal */
+    --rdp-accent-color-dark: hsl(var(--primary)) !important;
+    --rdp-background-color: hsl(var(--primary) / 0.12) !important; /* hovers/intervalo */
+    --rdp-outline: 2px solid hsl(var(--primary) / 0.35) !important;/* “hoje” */
+    --rdp-cell-size: 36px;                                         /* quadradinho */
+  }
+
+  /* estados (força as cores só dentro do wrapper) */
+  .cal-green .rdp-day_selected,
+  .cal-green .rdp-day_selected:hover,
+  .cal-green .rdp-day_selected:focus-visible {
+    background: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+  }
+
+  .cal-green .rdp-day:not(.rdp-day_disabled):not(.rdp-day_selected):hover {
+    background: hsl(var(--primary) / 0.10) !important;
+    color: hsl(var(--primary)) !important;
+  }
+
+  .cal-green .rdp-day_today {
+    outline: 2px solid hsl(var(--primary) / 0.35) !important;
+    outline-offset: 2px;
+  }
+
+  .cal-green .rdp-day_outside {
+    color: rgb(209 213 219) !important;  /* gray-300 */
+    opacity: .6 !important;
+  }
+  .cal-green .rdp-day_disabled,
+  .cal-green .rdp-day[aria-disabled="true"] {
+    color: rgb(156 163 175) !important;  /* gray-400 */
+    opacity: .6 !important;
+    cursor: not-allowed;
+  }
+
+  .cal-green .rdp .rdp-day_today:not(.rdp-day_selected) {
+  /* algumas versões usam outline, outras box-shadow — garantimos os dois */
+  outline: 2px solid hsl(var(--primary)) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 2px hsl(var(--primary)) !important;
+  border-radius: .375rem; /* igual ao rounded-md do botão */
+  /* se o número também ficar roxo, volta para a cor padrão do texto: */
+  color: inherit !important;
+  }
+
+  /* Se o HOJE estiver selecionado, deixa só o estilo de selecionado */
+  .cal-green .rdp .rdp-day_selected.rdp-day_today {
+  outline: none !important;
+  box-shadow: none !important;
+  }

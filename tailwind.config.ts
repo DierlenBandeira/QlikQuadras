@@ -38,10 +38,10 @@ const config = {
           600: "#00E600",
           700: "#00CC00",
           800: "#00B300",
-          900: "#009900",
+          900: "#00B300",
         },
         secondary: {
-          DEFAULT: "#003366", // Azul escuro
+          DEFAULT: "#CCE0FF", // Azul escuro
           foreground: "#000000", // Preto para texto
           50: "#E6F0FF",
           100: "#CCE0FF",
@@ -52,10 +52,10 @@ const config = {
           600: "#0052A3",
           700: "#003D7A",
           800: "#002952",
-          900: "#003366",
+          900: "#00B300",
         },
         accent: {
-          DEFAULT: "#003366", // Azul escuro
+          DEFAULT: "#CCE0FF", // Azul escuro
           foreground: "#000000", // Preto para texto
           50: "#E6F0FF",
           100: "#CCE0FF",
@@ -66,7 +66,7 @@ const config = {
           600: "#0052A3",
           700: "#003D7A",
           800: "#002952",
-          900: "#003366",
+          900: "#00B300",
         },
         destructive: {
           DEFAULT: "#DC2626",
@@ -125,7 +125,7 @@ const config = {
         "hero-pattern": "linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 100%)",
         "card-pattern": "linear-gradient(145deg, #FFFFFF 0%, #F8F8F8 100%)",
         "green-gradient": "linear-gradient(135deg, #00B300 0%, #00CC00 50%, #00E600 100%)",
-        "navy-gradient": "linear-gradient(135deg, #003366 0%, #0052A3 50%, #0066CC 100%)",
+        "navy-gradient": "linear-gradient(135deg, #CCE0FF 0%, #0052A3 50%, #0066CC 100%)",
         "white-gradient": "linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 50%, #EEEEEE 100%)",
       },
       boxShadow: {
