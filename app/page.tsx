@@ -1,5 +1,7 @@
 "use client"
 
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 import LogoutMenuItem from "@/components/LogoutMenuItem";
 import LoginIfLoggedOut from "@/components/LoginIfLoggedOut";
 import UserGreeting from "@/components/UserGreeting";
@@ -193,7 +195,6 @@ const courts = [
 
 export default function HomePage() {
 
-  
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const [date, setDate] = useState<Date | undefined>(undefined);        // data oficial (mostrada no botão)
