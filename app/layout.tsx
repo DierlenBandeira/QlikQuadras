@@ -1,10 +1,11 @@
-import "react-day-picker/dist/style.css";
+import "react-day-picker/dist/style.css"
 import type React from "react"
 import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { inter, sora } from "./fonts"
-import "./globals.css";                    // <- depois (suas overrides ganham)
+import "./globals.css"
+import AppHeader from "@/components/layout/AppHeader"
 
 export const metadata: Metadata = {
   title: "Clik Quadras - Reserve sua quadra com um clique",
@@ -15,11 +16,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${sora.variable}`}>
+    <html lang="pt-BR" className={`${inter.variable} ${sora.variable}`} suppressHydrationWarning>
       <head>
         <style>{`
 html {
@@ -29,7 +28,10 @@ html {
 }
         `}</style>
       </head>
-      <body>{children}</body>
+      <body suppressHydrationWarning className="min-h-screen flex flex-col">
+        <AppHeader />
+        <main className="flex-1">{children}</main>
+      </body>
     </html>
   )
 }

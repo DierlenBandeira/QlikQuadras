@@ -1,5 +1,6 @@
 "use client"
 
+import { redirect } from 'next/navigation'
 import { useMemo, useState } from "react"
 import OwnerHero from "@/components/owner/OwnerHero"
 import StatsGrid from "@/components/owner/StatsGrid"

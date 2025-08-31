@@ -1,13 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: true },
   images: {
-    unoptimized: true,
+    remotePatterns: [
+      // Supabase public bucket
+      { protocol: 'https', hostname: '**.supabase.co', pathname: '/storage/v1/object/public/**' },
+      // (opcional) vercel blob, se usar:
+      { protocol: 'https', hostname: '**.vercel-storage.com', pathname: '/**' },
+    ],
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '100mb',
+    },
+    
   },
 }
 

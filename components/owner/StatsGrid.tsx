@@ -32,15 +32,18 @@ function StatCard({
 export default function StatsGrid({
   reservations,
   approvals,
+  quadrasAtivas, // << novo: valor vindo do server (quadras.aprovado = true)
 }: {
   reservations: Reservation[];
   approvals: PendingApproval[];
+  quadrasAtivas: number;
 }) {
   const now = new Date();
   const month = now.getMonth();
   const year = now.getFullYear();
 
-  const confirmed = reservations.filter((r) => r.status === "confirmada").length;
+  // atenção: os status aqui estão em PT-BR (confirmada/pendente)
+  const confirmadas = reservations.filter((r) => r.status === "confirmada").length;
   const pendentes =
     approvals.length + reservations.filter((r) => r.status === "pendente").length;
 
@@ -51,13 +54,11 @@ export default function StatsGrid({
     })
     .reduce((sum, r) => sum + (r.valor ?? 0), 0);
 
-  const quadrasAtivas = new Set(reservations.map((r) => r.quadra)).size || 1;
-
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard
         title="Reservas confirmadas"
-        value={String(confirmed)}
+        value={String(confirmadas)}
         subtitle="no total"
         Icon={CalendarCheck}
       />
@@ -73,7 +74,11 @@ export default function StatsGrid({
         subtitle={now.toLocaleDateString("pt-BR", { month: "long" })}
         Icon={HandCoins}
       />
-      <StatCard title="Quadras ativas" value={String(quadrasAtivas)} Icon={Building2} />
+      <StatCard
+        title="Quadras ativas"
+        value={String(quadrasAtivas)} // << usa a prop correta
+        Icon={Building2}
+      />
     </div>
   );
 }

@@ -1,120 +1,80 @@
-"use client"
+'use client'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createSupabaseBrowser } from '@/lib/supabase/browser'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { createSupabaseBrowser } from "@/lib/supabase/client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-
-export default function ProprietarioLoginPage() {
+export default function LoginPage() {
+  const supa = createSupabaseBrowser()
   const router = useRouter()
-  const supabase = createSupabaseBrowser()
-
-  const [email, setEmail] = useState("")
-  const [senha, setSenha] = useState("")
-  const [remember, setRemember] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-
-    // Login com Supabase
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password: senha,
+  useEffect(() => {
+    const { data: sub } = supa.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        router.replace('/proprietario/quadras')
+        router.refresh()
+      }
     })
+    return () => sub.subscription?.unsubscribe?.()
+  }, [supa, router])
 
-    if (error) {
-      setError("E-mail ou senha inválidos.")
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true); setError(null)
+    const { error } = await supa.auth.signInWithPassword({ email, password })
+    setLoading(false)
+    if (error) { setError(error.message); return }
+    // Em geral já navega aqui, mas o listener acima cobre qualquer atraso:
+    router.replace('/proprietario/quadras')
+    router.refresh()
+  }
+
+  async function loginGoogle() {
+    setLoading(true)
+    try {
+      await supa.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${location.origin}/proprietario/quadras` }
+      })
+    } finally {
       setLoading(false)
-      return
     }
+  }
 
-    // Sucesso → o layout decide (dashboard / cadastro / onboarding)
-    router.replace("/proprietario")
+  async function signup() {
+    setLoading(true); setError(null)
+    const { error } = await supa.auth.signUp({ email, password })
+    setLoading(false)
+    if (error) { setError(error.message); return }
+    // se exigir confirmação por email, a sessão só aparece depois do confirm
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-md mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Acesse sua Conta</h1>
-          <p className="text-muted-foreground">
-            Entre com suas credenciais para gerenciar suas quadras
-          </p>
+    <div className="mx-auto max-w-md p-6 space-y-4">
+      <h1 className="text-2xl font-semibold">Entrar</h1>
+      <form onSubmit={onSubmit} className="space-y-3">
+        <div className="space-y-1">
+          <Label htmlFor="email">E-mail</Label>
+          <Input id="email" type="email" value={email} onChange={e=>setEmail(e.target.value)} required />
         </div>
+        <div className="space-y-1">
+          <Label htmlFor="password">Senha</Label>
+          <Input id="password" type="password" value={password} onChange={e=>setPassword(e.target.value)} required />
+        </div>
+        {error && <p className="text-sm text-red-600">{error}</p>}
+        <Button type="submit" disabled={loading} className="w-full">
+          {loading ? 'Entrando...' : 'Entrar'}
+        </Button>
+      </form>
 
-        <Card className="rounded-2xl">
-          <CardHeader>
-            <CardTitle className="text-xl">Login do Proprietário</CardTitle>
-            <CardDescription>Digite seus dados para acessar sua conta</CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            <form className="space-y-4" onSubmit={handleSubmit}>
-              <div className="space-y-2">
-                <Label htmlFor="email-login">E-mail</Label>
-                <Input
-                  id="email-login"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="senha-login">Senha</Label>
-                <Input
-                  id="senha-login"
-                  type="password"
-                  placeholder="Sua senha"
-                  value={senha}
-                  onChange={(e) => setSenha(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 text-sm">
-                  <Checkbox
-                    id="lembrar"
-                    checked={remember}
-                    onCheckedChange={(v) => setRemember(Boolean(v))}
-                  />
-                  Lembrar de mim
-                </label>
-
-                <Link href="/proprietario/esqueci-minha-senha" className="text-sm text-primary hover:underline">
-                  Esqueci minha senha
-                </Link>
-              </div>
-
-              {error && <p className="text-sm text-red-600">{error}</p>}
-
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Entrando..." : "Entrar"}
-              </Button>
-
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">
-                  Não tem conta?{" "}
-                  <Link href="/proprietario/cadastro" className="text-primary hover:underline">
-                    Cadastre-se aqui
-                  </Link>
-                </p>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+      <div className="text-center text-sm">
+        Não tem conta? <button onClick={signup} className="underline">Criar conta</button>
       </div>
     </div>
   )
