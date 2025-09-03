@@ -3,7 +3,13 @@ import { notFound } from 'next/navigation'
 import { createSupabaseServer } from '@/lib/supabase/server'
 import EditForm from './EditForm'
 
-export default async function EditarQuadraPage({ params }: { params: { slug: string } }) {
+export default async function EditarQuadraPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = await params // ✅ Next 15: params é assíncrono
+
   const supabase = createSupabaseServer()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) notFound()
@@ -11,7 +17,7 @@ export default async function EditarQuadraPage({ params }: { params: { slug: str
   const { data: quadra, error } = await supabase
     .from('quadras')
     .select('slug, nome, esporte, preco_hora, descricao, endereco, comodidades')
-    .eq('slug', params.slug)
+    .eq('slug', slug)            // ✅ usa a var slug
     .eq('owner_id', user.id)
     .single()
 

@@ -1,21 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
 import type { PendingApproval } from "@/types/owner"
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-
 import {
-  AlertCircle,
-  Check,
-  X,
-  Mail,
-  Phone,
-  IdCard,
-  Calendar as CalendarIcon,
-  Clock,
-  BadgeDollarSign,
+  AlertCircle, Check, X, Mail, Phone, IdCard,
+  Calendar as CalendarIcon, Clock, BadgeDollarSign
 } from "lucide-react"
 
 function formatDate(d: string | Date) {
@@ -27,13 +19,48 @@ function formatBRL(v: number) {
 
 export default function PendingApprovals({ initial }: { initial: PendingApproval[] }) {
   const [items, setItems] = useState<PendingApproval[]>(initial)
+  const [loadingId, setLoadingId] = useState<string | null>(null)
+  const router = useRouter()
+  const [isRefreshing, startTransition] = useTransition()
 
-  const handleApproval = (id: string, action: "approve" | "reject") => {
+  async function sendStatus(id: string, status: "confirmed" | "canceled") {
+    const res = await fetch(`/api/reservas/${id}/status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    })
+    if (!res.ok) {
+      const { error } = await res.json().catch(() => ({ error: "Falha ao atualizar" }))
+      throw new Error(error || "Não foi possível salvar no servidor.")
+    }
+  }
+
+  const handleApproval = async (id: string, action: "approve" | "reject") => {
     const ok = confirm(
       action === "approve" ? "Aprovar pagamento na quadra?" : "Rejeitar esta solicitação?"
     )
     if (!ok) return
-    setItems((prev) => prev.filter((x) => x.id !== id))
+
+    const newStatus: "confirmed" | "canceled" =
+      action === "approve" ? "confirmed" : "canceled"
+
+    // snapshot IMUTÁVEL p/ rollback seguro
+    const snapshot = [...items]
+    setLoadingId(id)
+    // otimista: remove da lista (tela só mostra pendentes)
+    setItems(prev => prev.filter(x => x.id !== id))
+
+    try {
+      await sendStatus(id, newStatus)
+      // Revalida Server Components (cards/contagens) após sucesso
+      startTransition(() => router.refresh())
+    } catch (err) {
+      // rollback
+      setItems(snapshot)
+      alert((err as Error).message)
+    } finally {
+      setLoadingId(null)
+    }
   }
 
   if (items.length === 0) {
@@ -85,33 +112,15 @@ export default function PendingApprovals({ initial }: { initial: PendingApproval
 
                   <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
                     <div className="space-y-1 text-muted-foreground">
-                      <p className="flex items-center gap-2">
-                        <Mail className="h-4 w-4" />
-                        {sol.email}
-                      </p>
-                      <p className="flex items-center gap-2">
-                        <Phone className="h-4 w-4" />
-                        {sol.telefone}
-                      </p>
-                      <p className="flex items-center gap-2">
-                        <IdCard className="h-4 w-4" />
-                        {sol.cpf}
-                      </p>
+                      <p className="flex items-center gap-2"><Mail className="h-4 w-4" />{sol.email}</p>
+                      <p className="flex items-center gap-2"><Phone className="h-4 w-4" />{sol.telefone}</p>
+                      <p className="flex items-center gap-2"><IdCard className="h-4 w-4" />{sol.cpf}</p>
                     </div>
 
                     <div className="space-y-1 text-muted-foreground">
-                      <p className="flex items-center gap-2">
-                        <CalendarIcon className="h-4 w-4" />
-                        {formatDate(sol.data)}
-                      </p>
-                      <p className="flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        {sol.horario}
-                      </p>
-                      <p className="flex items-center gap-2">
-                        <BadgeDollarSign className="h-4 w-4" />
-                        {formatBRL(sol.valor)}
-                      </p>
+                      <p className="flex items-center gap-2"><CalendarIcon className="h-4 w-4" />{formatDate(sol.data)}</p>
+                      <p className="flex items-center gap-2"><Clock className="h-4 w-4" />{sol.horario}</p>
+                      <p className="flex items-center gap-2"><BadgeDollarSign className="h-4 w-4" />{formatBRL(sol.valor)}</p>
                     </div>
                   </div>
                 </div>
@@ -128,19 +137,21 @@ export default function PendingApprovals({ initial }: { initial: PendingApproval
                   <Button
                     size="sm"
                     onClick={() => handleApproval(sol.id, "approve")}
-                    className="bg-primary hover:bg-primary/90"
+                    className="bg-primary hover:bg-primary/90 disabled:opacity-60"
+                    disabled={loadingId === sol.id || isRefreshing}
                   >
                     <Check className="mr-1 h-4 w-4" />
-                    Aprovar Pagamento na Quadra
+                    {loadingId === sol.id ? "Aprovando..." : "Aprovar Pagamento na Quadra"}
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleApproval(sol.id, "reject")}
-                    className="border-red-200 text-red-600 hover:bg-red-50"
+                    className="border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60"
+                    disabled={loadingId === sol.id || isRefreshing}
                   >
                     <X className="mr-1 h-4 w-4" />
-                    Rejeitar Solicitação
+                    {loadingId === sol.id ? "Rejeitando..." : "Rejeitar Solicitação"}
                   </Button>
                 </div>
               </div>

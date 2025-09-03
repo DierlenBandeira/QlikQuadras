@@ -25,6 +25,7 @@ export interface PendingApproval {
   data: string;
   horario: string;
   valor: number;
+  status: "pending";
   metodoPagamento: PaymentMethod;
   dataSolicitacao: string;
 }

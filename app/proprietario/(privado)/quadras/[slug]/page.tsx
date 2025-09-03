@@ -13,30 +13,29 @@ import {
   AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel
 } from '@/components/ui/alert-dialog'
 
-
-
 function currencyBRL(n: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n)
 }
 
-export default async function QuadraDetalhePage({ params }: { params: { slug: string } }) {
+export default async function QuadraDetalhePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = await params // ✅ Next 15 requer await
   const supabase = createSupabaseServer()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    // ajuste sua rota de login se precisar
-    notFound()
-  }
+  if (!user) notFound()
 
   const { data: quadra, error } = await supabase
     .from('quadras')
     .select(`
       id, slug, nome, esporte, preco_hora, descricao, aprovado,
-      imagens, comodidades,
-      endereco
+      imagens, comodidades, endereco
     `)
-    .eq('slug', params.slug)
-    .eq('owner_id', user!.id) // garante que é do dono
+    .eq('slug', slug)           // ✅ usar slug resolvido
+    .eq('owner_id', user.id)
     .single()
 
   if (error || !quadra) notFound()
@@ -45,14 +44,13 @@ export default async function QuadraDetalhePage({ params }: { params: { slug: st
   const comodidades = (quadra.comodidades as string[]) || []
   const endereco = (quadra.endereco as any) || {}
 
-    const { data: adminRow } = await supabase
+  const { data: adminRow } = await supabase
     .from('admins')
     .select('user_id')
-    .eq('user_id', user!.id)
+    .eq('user_id', user.id)
     .maybeSingle()
 
   const isAdmin = !!adminRow
-
 
   return (
     <div className="mx-auto max-w-5xl p-6 space-y-6">
@@ -68,21 +66,16 @@ export default async function QuadraDetalhePage({ params }: { params: { slug: st
         </div>
       </div>
 
-      {/* Galeria */}
       <Card>
         <CardContent className="p-0">
           {imagens.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 p-2">
-              {/* capa grande */}
               <div className="md:col-span-2 overflow-hidden rounded-lg">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={imagens[0]} alt={quadra.nome} className="h-72 w-full object-cover" />
               </div>
-              {/* thumbs */}
               <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
                 {imagens.slice(1, 5).map((src, i) => (
                   <div key={i} className="overflow-hidden rounded-lg">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={src} alt={`foto-${i + 2}`} className="h-36 w-full object-cover" />
                   </div>
                 ))}
@@ -95,7 +88,6 @@ export default async function QuadraDetalhePage({ params }: { params: { slug: st
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Info principal */}
         <Card className="md:col-span-2">
           <CardHeader className="pb-3">
             <CardTitle>Informações</CardTitle>
@@ -128,7 +120,6 @@ export default async function QuadraDetalhePage({ params }: { params: { slug: st
           </CardContent>
         </Card>
 
-        {/* Endereço */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle>Localização</CardTitle>
@@ -149,45 +140,38 @@ export default async function QuadraDetalhePage({ params }: { params: { slug: st
         </Card>
       </div>
 
-        {/* Ações */}
-        <div className="flex gap-3">
+      {/* Ações */}
+      <div className="flex gap-3">
         <Link href={`/proprietario/quadras/${quadra.slug}/editar`}>
-            <Button variant="outline">Editar</Button>
+          <Button variant="outline">Editar</Button>
         </Link>
 
-        {/* Aprovar (só admin e se ainda não aprovado) */}
         {!quadra.aprovado && isAdmin && (
-            <form action={approveQuadra.bind(null, quadra.slug)}>
+          <form action={approveQuadra.bind(null, quadra.slug)}>
             <ApproveSubmit />
-            </form>
+          </form>
         )}
 
-                {/* Excluir (com confirmação) */}
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                    <Button variant="destructive">Excluir</Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Excluir esta quadra?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                        Isso removerá a quadra e todas as fotos associadas do Storage. Esta ação não pode ser desfeita.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        {/* Form chamando a server action */}
-                        <form action={deleteQuadra.bind(null, quadra.slug)}>
-                        <DeleteSubmit />
-                        </form>
-                    </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-                </div>
-
-
-
-
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive">Excluir</Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir esta quadra?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Isso removerá a quadra e todas as fotos associadas do Storage. Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <form action={deleteQuadra.bind(null, quadra.slug)}>
+                <DeleteSubmit />
+              </form>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
+    </div>
   )
 }

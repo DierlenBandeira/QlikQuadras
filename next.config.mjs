@@ -13,6 +13,7 @@ const nextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '100mb',
+      allowedDevOrigins: ["https://ascii-oregon-unless-cancer.trycloudflare.com"],
     },
     
   },
